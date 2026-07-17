@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>期末考试成绩查询</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px 40px;
+  }
+  .header {
+    text-align: center;
+    color: #fff;
+    margin: 20px 0 30px;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .header p {
+    font-size: 14px;
+    opacity: 0.85;
+  }
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 400px;
+  }
+  .form-group {
+    margin-bottom: 18px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 14px;
+    color: #444;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e8e8e8;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .form-group input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
+  }
+  .btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    margin-top: 6px;
+  }
+  .btn:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 8px rgba(102,126,234,0.3);
+  }
+  .error-msg {
+    color: #e74c3c;
+    font-size: 13px;
+    margin-top: 10px;
+    text-align: center;
+    display: none;
+  }
+  .result {
+    display: none;
+    width: 100%;
+    max-width: 400px;
+    margin-top: 20px;
+  }
+  .result-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    overflow: hidden;
+  }
+  .result-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 20px 24px;
+    text-align: center;
+  }
+  .result-header .name {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .result-header .info {
+    font-size: 13px;
+    opacity: 0.85;
+  }
+  .score-summary {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding: 18px 24px;
+    background: #f8f9ff;
+    border-bottom: 1px solid #eee;
+  }
+  .score-summary .item {
+    text-align: center;
+  }
+  .score-summary .item .label {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+  .score-summary .item .value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #667eea;
+  }
+  .score-table {
+    padding: 16px 20px 20px;
+  }
+  .score-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 8px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .score-row:last-child {
+    border-bottom: none;
+  }
+  .score-row .subject {
+    font-size: 15px;
+    color: #333;
+    font-weight: 500;
+    min-width: 60px;
+  }
+  .score-row .score {
+    font-size: 16px;
+    font-weight: 600;
+    color: #444;
+    text-align: right;
+  }
+  .score-row .score.high {
+    color: #27ae60;
+  }
+  .score-row .score.low {
+    color: #e74c3c;
+  }
+  .score-row .score.special {
+    color: #e67e22;
+    font-size: 12px;
+    font-weight: 500;
+    max-width: 200px;
+    text-align: right;
+  }
+  .back-btn {
+    display: block;
+    text-align: center;
+    margin-top: 16px;
+    color: #fff;
+    font-size: 14px;
+    opacity: 0.9;
+    cursor: pointer;
+    padding: 10px;
+  }
+  .footer {
+    margin-top: 30px;
+    color: rgba(255,255,255,0.5);
+    font-size: 12px;
+    text-align: center;
+  }
+  .icon-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .dot-green { background: #27ae60; }
+  .dot-red { background: #e74c3c; }
+  .dot-orange { background: #e67e22; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>高二年级11班 期末考试成绩查询</h1>
+  <p>2025学年第二学期综合训练</p>
+</div>
+
+<div class="card" id="queryForm">
+  <div class="form-group">
+    <label>学号</label>
+    <input type="text" id="studentId" placeholder="请输入学号（如 20271127）" autocomplete="off">
+  </div>
+  <div class="form-group">
+    <label>姓名</label>
+    <input type="text" id="studentName" placeholder="请输入姓名" autocomplete="off">
+  </div>
+  <button class="btn" onclick="queryScore()">查询成绩</button>
+  <div class="error-msg" id="errorMsg"></div>
+</div>
+
+<div class="result" id="resultArea">
+  <div class="result-card">
+    <div class="result-header">
+      <div class="name" id="rName"></div>
+      <div class="info" id="rInfo"></div>
+    </div>
+    <div class="score-summary">
+      <div class="item">
+        <div class="label">总分</div>
+        <div class="value" id="rTotal"></div>
+      </div>
+      <div class="item">
+        <div class="label">主科总分</div>
+        <div class="value" id="rMainTotal"></div>
+      </div>
+    </div>
+    <div class="score-table" id="scoreTable"></div>
+  </div>
+  <div class="back-btn" onclick="goBack()">返回重新查询</div>
+</div>
+
+<div class="footer">仅供本班学生查询使用</div>
+
+<script>
+const DATA = [
+  {sid:"20271127",name:"\u738b\u82e5\u6b23",total:460,main_total:266,chinese:108,math:84,english:74,politics:58,history:72,geography:64,japanese:"-"},
+  {sid:"20271109",name:"\u59dc\u4ef2\u8fbe",total:437.5,main_total:254.5,chinese:76,math:58,english:"-",politics:67,history:65,geography:51,japanese:120.5},
+  {sid:"20271103",name:"\u51af\u601d\u5609",total:428.5,main_total:221.5,chinese:90,math:66,english:65.5,politics:75,history:73,geography:59,japanese:"-"},
+  {sid:"20271104",name:"\u66fe\u60e0\u7433",total:424.5,main_total:206.5,chinese:92,math:73,english:41.5,politics:72,history:83,geography:63,japanese:"-"},
+  {sid:"20271110",name:"\u9648\u6d01\u83b9",total:423.5,main_total:227.5,chinese:93,math:75,english:59.5,politics:64,history:75,geography:57,japanese:"-"},
+  {sid:"20271107",name:"\u6e29\u96e8\u5f64",total:399,main_total:180,chinese:98,math:29,english:53,politics:63,history:75,geography:81,japanese:"-"},
+  {sid:"20271129",name:"\u90ed\u82b7\u83b9",total:397.5,main_total:188.5,chinese:88,math:57,english:43.5,politics:67,history:72,geography:70,japanese:"-"},
+  {sid:"20271130",name:"\u9648\u88d5\u6e90",total:395,main_total:209,chinese:89,math:25,english:"-",politics:55,history:72,geography:59,japanese:95},
+  {sid:"20271106",name:"\u66fe\u5e0c\u7a0b",total:394.5,main_total:179.5,chinese:96,math:54,english:29.5,politics:64,history:77,geography:74,japanese:"-"},
+  {sid:"20271111",name:"\u5f20\u5b8f\u5b87",total:388.5,main_total:194.5,chinese:92,math:77,english:25.5,politics:60,history:72,geography:62,japanese:"-"},
+  {sid:"20271118",name:"\u90ed\u7f8e\u7f28",total:380.5,main_total:187.5,chinese:102,math:29,english:56.5,politics:58,history:75,geography:60,japanese:"-"},
+  {sid:"20271112",name:"\u9648\u8f89",total:378,main_total:208,chinese:80,math:23,english:"-",politics:50,history:68,geography:52,japanese:105},
+  {sid:"20271115",name:"\u5deb\u83f2",total:377,main_total:179,chinese:93,math:37,english:49,politics:64,history:74,geography:60,japanese:"-"},
+  {sid:"20271114",name:"\u9122\u96e8\u8431",total:376.5,main_total:187.5,chinese:80,math:42,english:65.5,politics:62,history:65,geography:62,japanese:"-"},
+  {sid:"20271105",name:"\u4f55\u73ae",total:371.5,main_total:192.5,chinese:93,math:51,english:48.5,politics:55,history:67,geography:57,japanese:"-"},
+  {sid:"20271142",name:"\u949f\u51b0\u6960",total:353,main_total:164,chinese:88,math:21,english:55,politics:55,history:67,geography:67,japanese:"-"},
+  {sid:"20271126",name:"\u5f20\u94b0\u534e",total:352.5,main_total:129.5,chinese:89,math:12,english:28.5,politics:67,history:78,geography:78,japanese:"-"},
+  {sid:"20271128",name:"\u5510\u5728\u5fc3",total:345.5,main_total:159.5,chinese:91,math:32,english:36.5,politics:53,history:79,geography:54,japanese:"-"},
+  {sid:"20271125",name:"\u59da\u68a6\u5a1c",total:343.5,main_total:159.5,chinese:91,math:10,english:58.5,politics:59,history:57,geography:68,japanese:"-"},
+  {sid:"20271117",name:"\u5362\u5609\u6b23",total:342.5,main_total:155.5,chinese:83,math:34,english:38.5,politics:67,history:66,geography:54,japanese:"-"},
+  {sid:"20271145",name:"\u9ad8\u827a\u6e90",total:339,main_total:168,chinese:52,math:57,english:59,politics:39,history:76,geography:56,japanese:"-"},
+  {sid:"20271119",name:"\u6b27\u96c5\u7426",total:337.5,main_total:130.5,chinese:92,math:20,english:18.5,politics:56,history:79,geography:72,japanese:"-"},
+  {sid:"20271123",name:"\u949f\u6893\u6986",total:336.5,main_total:162.5,chinese:89,math:45,english:28.5,politics:56,history:71,geography:47,japanese:"-"},
+  {sid:"20271134",name:"\u949f\u627f\u8298",total:334.5,main_total:173.5,chinese:80,math:52,english:41.5,politics:39,history:62,geography:60,japanese:"-"},
+  {sid:"20271131",name:"\u5b8b\u60a6\u77b3",total:333.5,main_total:166.5,chinese:92,math:30,english:44.5,politics:65,history:59,geography:43,japanese:"-"},
+  {sid:"20271120",name:"\u53f6\u598d",total:329.5,main_total:141.5,chinese:78,math:26,english:37.5,politics:65,history:61,geography:62,japanese:"-"},
+  {sid:"20271108",name:"\u5362\u9547\u8f69",total:321.5,main_total:149.5,chinese:72,math:51,english:26.5,politics:49,history:69,geography:54,japanese:"-"},
+  {sid:"20271146",name:"\u9ec4\u601d\u777f",total:318,main_total:154,chinese:77,math:27,english:50,politics:34,history:76,geography:54,japanese:"-"},
+  {sid:"20271113",name:"\u6881\u56fd\u4eae",total:304.5,main_total:120.5,chinese:60,math:30,english:30.5,politics:51,history:64,geography:69,japanese:"-"},
+  {sid:"20271122",name:"\u7f57\u4eac",total:298.5,main_total:122.5,chinese:54,math:32,english:36.5,politics:42,history:75,geography:59,japanese:"-"},
+  {sid:"20271148",name:"\u6797\u627f\u4e50",total:282.5,main_total:144.5,chinese:58,math:54,english:32.5,politics:37,history:64,geography:37,japanese:"-"},
+  {sid:"20271133",name:"\u6797\u8d1e\u88d5",total:280,main_total:117,chinese:60,math:19,english:38,politics:51,history:63,geography:49,japanese:"-"},
+  {sid:"20271124",name:"\u5217\u67cf\u8f69",total:278,main_total:130,chinese:69,math:29,english:32,politics:38,history:63,geography:47,japanese:"-"},
+  {sid:"20271139",name:"\u9ec4\u56fd\u680b",total:183,main_total:66,chinese:46,math:12,english:8,politics:24,history:63,geography:30,japanese:"-"},
+  {sid:"20271121",name:"\u9ec4\u5fc3\u8a00",total:121,main_total:121,chinese:97,math:24,english:"\u7f3a\u8003\uff0c\u4e0d\u8ba1\u6392\u540d",politics:"\u7f3a\u8003\uff0c\u4e0d\u8ba1\u6392\u540d",history:"\u672a\u626b\uff0c\u4e0d\u8ba1\u6392\u540d",geography:"\u7f3a\u8003\uff0c\u4e0d\u8ba1\u6392\u540d",japanese:"-"},
+  {sid:"20271102",name:"\u6768\u8c19\u8335",total:104.5,main_total:41.5,chinese:22,math:12,english:7.5,politics:24,history:30,geography:9,japanese:"-"},
+  {sid:"20271138",name:"\u7f57\u7693\u6587",total:71,main_total:20,chinese:"\u7f3a\u8003\uff0c\u4e0d\u8ba1\u6392\u540d",math:"0\uff0c\u4e0d\u8ba1\u6392\u540d",english:20,politics:"\u7f3a\u8003\uff0c\u4e0d\u8ba1\u6392\u540d",history:51,geography:"\u672a\u626b\uff0c\u4e0d\u8ba1\u6392\u540d",japanese:"-"},
+  {sid:"20271140",name:"\u4e25\u6893\u658c",total:42.5,main_total:42.5,chinese:13,math:19,english:10.5,politics:"0\uff0c\u4e0d\u8ba1\u6392\u540d",history:"\u672a\u626b\uff0c\u4e0d\u8ba1\u6392\u540d",geography:"\u672a\u626b\uff0c\u4e0d\u8ba1\u6392\u540d",japanese:"-"},
+  {sid:"20271136",name:"\u9f9a\u51cc\u7075",total:29,main_total:29,chinese:12,math:17,english:"\u7f3a\u8003\uff0c\u4e0d\u8ba1\u6392\u540d",politics:"\u7f3a\u8003\uff0c\u4e0d\u8ba1\u6392\u540d",history:"\u672a\u626b\uff0c\u4e0d\u8ba1\u6392\u540d",geography:"\u7f3a\u8003\uff0c\u4e0d\u8ba1\u6392\u540d",japanese:"-"}
+];
+
+const SUBJECTS = [
+  {key:"chinese", label:"\u8bed\u6587", full:150},
+  {key:"math", label:"\u6570\u5b66", full:150},
+  {key:"english", label:"\u82f1\u8bed", full:130},
+  {key:"politics", label:"\u653f\u6cbb", full:100},
+  {key:"history", label:"\u5386\u53f2", full:100},
+  {key:"geography", label:"\u5730\u7406", full:100},
+  {key:"japanese", label:"\u65e5\u8bed", full:150}
+];
+
+function queryScore() {
+  const sid = document.getElementById('studentId').value.trim();
+  const name = document.getElementById('studentName').value.trim();
+  const errEl = document.getElementById('errorMsg');
+  errEl.style.display = 'none';
+
+  if (!sid) { showError('\u8bf7\u8f93\u5165\u5b66\u53f7'); return; }
+  if (!name) { showError('\u8bf7\u8f93\u5165\u59d3\u540d'); return; }
+
+  const student = DATA.find(s => s.sid === sid && s.name === name);
+  if (!student) {
+    showError('\u5b66\u53f7\u6216\u59d3\u540d\u4e0d\u5339\u914d\uff0c\u8bf7\u68c0\u67e5\u540e\u91cd\u8bd5');
+    return;
+  }
+
+  showResult(student);
+}
+
+function showError(msg) {
+  const errEl = document.getElementById('errorMsg');
+  errEl.textContent = msg;
+  errEl.style.display = 'block';
+}
+
+function showResult(s) {
+  document.getElementById('queryForm').style.display = 'none';
+  document.getElementById('resultArea').style.display = 'block';
+  document.getElementById('rName').textContent = s.name;
+  document.getElementById('rInfo').textContent = '\u5b66\u53f7 ' + s.sid + ' | \u9ad8\u4e8c\u5e74\u7ea711\u73ed';
+  document.getElementById('rTotal').textContent = s.total;
+  document.getElementById('rMainTotal').textContent = s.main_total;
+
+  let html = '';
+  for (const subj of SUBJECTS) {
+    const val = s[subj.key];
+    if (val === '-' || val === null || val === undefined) continue;
+    const isStr = typeof val === 'string';
+    let scoreClass = '';
+    let displayVal = val;
+    if (isStr) {
+      scoreClass = 'special';
+      displayVal = val;
+    } else {
+      const ratio = val / subj.full;
+      if (ratio >= 0.8) scoreClass = 'high';
+      else if (ratio < 0.4) scoreClass = 'low';
+      displayVal = val;
+    }
+    html += '<div class="score-row">' +
+      '<span class="subject">' + subj.label + '</span>' +
+      '<span class="score ' + scoreClass + '">' + displayVal + (isStr ? '' : ' / ' + subj.full) + '</span>' +
+      '</div>';
+  }
+  document.getElementById('scoreTable').innerHTML = html;
+}
+
+function goBack() {
+  document.getElementById('resultArea').style.display = 'none';
+  document.getElementById('queryForm').style.display = 'block';
+  document.getElementById('studentId').value = '';
+  document.getElementById('studentName').value = '';
+  document.getElementById('errorMsg').style.display = 'none';
+}
+
+// Allow Enter key to submit
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && document.getElementById('queryForm').style.display !== 'none') {
+    queryScore();
+  }
+});
+</script>
+</body>
+</html>
